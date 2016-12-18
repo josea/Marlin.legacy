@@ -29,6 +29,7 @@
 #include "language.h"
 #include "cardreader.h"
 #include "speed_lookuptable.h"
+#include "mcp4728.h"
 #if defined(DIGIPOTSS_PIN) && DIGIPOTSS_PIN > -1
 #include <SPI.h>
 #endif
@@ -69,6 +70,8 @@ volatile long endstops_stepsTotal,endstops_stepsDone;
 static volatile bool endstop_x_hit=false;
 static volatile bool endstop_y_hit=false;
 static volatile bool endstop_z_hit=false;
+static volatile bool endstop_e_hit=false;
+
 #ifdef ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
 bool abort_on_endstop_hit = false;
 #endif
@@ -82,6 +85,8 @@ static bool old_y_min_endstop=false;
 static bool old_y_max_endstop=false;
 static bool old_z_min_endstop=false;
 static bool old_z_max_endstop=false;
+static bool old_e_min_endstop=false;
+static bool old_e_max_endstop=false;
 
 static bool check_endstops = true;
 
@@ -172,7 +177,7 @@ asm volatile ( \
 
 void checkHitEndstops()
 {
- if( endstop_x_hit || endstop_y_hit || endstop_z_hit) {
+ if( endstop_x_hit || endstop_y_hit || endstop_z_hit || endstop_e_hit) {
    SERIAL_ECHO_START;
    SERIAL_ECHOPGM(MSG_ENDSTOPS_HIT);
    if(endstop_x_hit) {
@@ -187,10 +192,15 @@ void checkHitEndstops()
      SERIAL_ECHOPAIR(" Z:",(float)endstops_trigsteps[Z_AXIS]/axis_steps_per_unit[Z_AXIS]);
      LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT "Z");
    }
+   if(endstop_e_hit) {
+     SERIAL_ECHOPAIR(" E:",(float)endstops_trigsteps[E_AXIS]/axis_steps_per_unit[E_AXIS]);
+     LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT "E");
+   }
    SERIAL_ECHOLN("");
    endstop_x_hit=false;
    endstop_y_hit=false;
    endstop_z_hit=false;
+   endstop_e_hit=false;
 #ifdef ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
    if (abort_on_endstop_hit)
    {
@@ -210,6 +220,7 @@ void endstops_hit_on_purpose()
   endstop_x_hit=false;
   endstop_y_hit=false;
   endstop_z_hit=false;
+  endstop_e_hit=false;
 }
 
 void enable_endstops(bool check)
@@ -526,6 +537,39 @@ ISR(TIMER1_COMPA_vect)
         #endif
       }
     }
+    // E ------------------------------------------------------------
+      if ((out_bits & (1<<E_AXIS)) != 0) {  // -direction
+        WRITE(E0_DIR_PIN, INVERT_E0_DIR);
+        count_direction[E_AXIS]=-1;
+        CHECK_ENDSTOPS
+        {
+          #if defined(E_MIN_PIN) && E_MIN_PIN > -1
+            bool e_min_endstop=(READ(E_MIN_PIN) != E_MIN_ENDSTOP_INVERTING);
+            if(e_min_endstop && old_e_min_endstop && (current_block->steps_e > 0)) {
+              endstops_trigsteps[E_AXIS] = count_position[E_AXIS];
+              endstop_e_hit=true;
+              step_events_completed = current_block->step_event_count;
+            }
+            old_e_min_endstop = e_min_endstop;
+          #endif
+        }
+      }
+      else { // +direction
+        WRITE(E0_DIR_PIN, !INVERT_E0_DIR);
+        count_direction[E_AXIS]=1;
+        CHECK_ENDSTOPS
+        {
+          #if defined(E_MAX_PIN) && E_MAX_PIN > -1
+            bool e_max_endstop=(READ(E_MAX_PIN) != E_MAX_ENDSTOP_INVERTING);
+            if(e_max_endstop && old_e_max_endstop && (current_block->steps_e > 0)) {
+              endstops_trigsteps[E_AXIS] = count_position[E_AXIS];
+              endstop_e_hit=true;
+              step_events_completed = current_block->step_event_count;
+            }
+            old_e_max_endstop = e_max_endstop;
+          #endif
+        }
+      }
 
     #ifndef ADVANCE
       if ((out_bits & (1<<E_AXIS)) != 0) {  // -direction
@@ -864,6 +908,14 @@ void st_init()
     #endif
   #endif
 
+  #if defined(E_MIN_PIN) && E_MIN_PIN > -1
+    SET_INPUT(E_MIN_PIN);
+    #ifdef ENDSTOPPULLUP_EMIN
+      WRITE(E_MIN_PIN,HIGH);
+    #endif
+  #endif
+
+
   #if defined(X_MAX_PIN) && X_MAX_PIN > -1
     SET_INPUT(X_MAX_PIN);
     #ifdef ENDSTOPPULLUP_XMAX
@@ -885,6 +937,12 @@ void st_init()
     #endif
   #endif
 
+  #if defined(E_MAX_PIN) && E_MAX_PIN > -1
+    SET_INPUT(E_MAX_PIN);
+    #ifdef ENDSTOPPULLUP_EMAX
+      WRITE(E_MAX_PIN,HIGH);
+    #endif
+  #endif
 
   //Initialize Step Pins
   #if defined(X_STEP_PIN) && (X_STEP_PIN > -1)
@@ -1225,6 +1283,102 @@ void digipot_current(uint8_t driver, int current)
   if (driver == 2) analogWrite(MOTOR_CURRENT_PWM_E_PIN, (long)current * 255L / (long)MOTOR_CURRENT_PWM_RANGE);
   #endif
 }
+
+#ifdef DAC_STEPPER_CURRENT
+bool dac_present = false;
+const uint8_t dac_order[NUM_AXIS] = DAC_STEPPER_ORDER;
+
+mcp4728 stepper_current_dac(DAC_STEPPER_ADDRESS);
+
+int dac_init()
+{
+	int i;
+	stepper_current_dac.begin();
+
+	if(stepper_current_dac.reset() != 0)
+		return -1;
+
+	dac_present = true;
+
+  // read the current settings, and if they are unset
+  // read default values form config file and save to eeprom
+  uint8_t _c[4];
+  _c[0] = (int) stepper_current_dac.getValue(0);
+  _c[1] = (int) stepper_current_dac.getValue(1);
+  _c[2] = (int) stepper_current_dac.getValue(2);
+  _c[3] = (int) stepper_current_dac.getValue(3);
+  if (_c[0] == 0 && _c[1] == 0 && _c[2] == 0 && _c[3] == 0) {
+    const uint8_t dac_stepper_current[] = DAC_STEPPER_CURRENT;
+    for(int i=0;i<NUM_AXIS;i++) {
+      dac_current_percent(i,dac_stepper_current[i]);
+    }
+    dac_commit_eeprom();
+  }
+
+	for(i=0;i<NUM_AXIS;i++) {
+		stepper_current_dac.setVref(i, DAC_STEPPER_VREF);
+		stepper_current_dac.setGain(i, DAC_STEPPER_GAIN);
+	}
+
+	return 0;
+}
+
+void dac_current_percent(uint8_t channel, float val)
+{
+	if(!dac_present) return;
+
+	if(val > 100)
+		val = 100;
+
+	stepper_current_dac.analogWrite(dac_order[channel],
+			val*DAC_STEPPER_MAX/100);
+	stepper_current_dac.update();
+}
+
+void dac_current_raw(uint8_t channel, uint16_t val)
+{
+	if(!dac_present) return;
+
+	if(val > DAC_STEPPER_MAX)
+		val = DAC_STEPPER_MAX;
+
+	stepper_current_dac.analogWrite(dac_order[channel], val);
+	stepper_current_dac.update();
+}
+
+void dac_print_values()
+{
+	if(!dac_present) return;
+
+	SERIAL_ECHO_START;
+	SERIAL_ECHOLNPGM("Stepper current values [%(raw)]:");
+	SERIAL_ECHO_START;
+	SERIAL_ECHOPAIR(" X:",
+		100.0*stepper_current_dac.getValue(dac_order[0])/DAC_STEPPER_MAX);
+	SERIAL_ECHOPAIR("(",
+		(long unsigned int) stepper_current_dac.getValue(dac_order[0]));
+	SERIAL_ECHOPAIR(") Y:",
+		100.0*stepper_current_dac.getValue(dac_order[1])/DAC_STEPPER_MAX);
+	SERIAL_ECHOPAIR("(",
+		(long unsigned int) stepper_current_dac.getValue(dac_order[1]));
+	SERIAL_ECHOPAIR(") Z:",
+		100.0*stepper_current_dac.getValue(dac_order[2])/DAC_STEPPER_MAX);
+	SERIAL_ECHOPAIR("(",
+		(long unsigned int) stepper_current_dac.getValue(dac_order[2]));
+	SERIAL_ECHOPAIR(") E:",
+		100.0*stepper_current_dac.getValue(dac_order[3])/DAC_STEPPER_MAX);
+	SERIAL_ECHOPAIR("(",
+		(long unsigned int) stepper_current_dac.getValue(dac_order[3]));
+	SERIAL_ECHOLN(")");
+}
+
+void dac_commit_eeprom()
+{
+	if(!dac_present) return;
+
+	stepper_current_dac.eepromWrite();
+}
+#endif
 
 void microstep_init()
 {

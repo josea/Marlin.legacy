@@ -16,7 +16,7 @@
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__ // build date and time
-#define STRING_CONFIG_H_AUTHOR "(lwalkera, Printrbot firmware)" // Who made the changes.
+#define STRING_CONFIG_H_AUTHOR "Printrbot" // Who made the changes.
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
 // This allows the connection of wireless adapters (for instance) to non-default port pins.
@@ -32,45 +32,11 @@
 
 
 //// The following define selects which electronics board you have. Please choose the one that matches your setup
-// 10 = Gen7 custom (Alfons3 Version) "https://github.com/Alfons3/Generation_7_Electronics"
-// 11 = Gen7 v1.1, v1.2 = 11
-// 12 = Gen7 v1.3
-// 13 = Gen7 v1.4
-// 2  = Cheaptronic v1.0
-// 20 = Sethi 3D_1
-// 3  = MEGA/RAMPS up to 1.2 = 3
-// 33 = RAMPS 1.3 / 1.4 (Power outputs: Extruder, Fan, Bed)
-// 34 = RAMPS 1.3 / 1.4 (Power outputs: Extruder0, Extruder1, Bed)
-// 35 = RAMPS 1.3 / 1.4 (Power outputs: Extruder, Fan, Fan)
-// 4  = Duemilanove w/ ATMega328P pin assignment
-// 5  = Gen6
-// 51 = Gen6 deluxe
-// 6  = Sanguinololu < 1.2
-// 62 = Sanguinololu 1.2 and above
-// 63 = Melzi
-// 64 = STB V1.1
-// 65 = Azteeg X1
-// 66 = Melzi with ATmega1284 (MaKr3d version)
-// 67 = Azteeg X3
-// 7  = Ultimaker
-// 71 = Ultimaker (Older electronics. Pre 1.5.4. This is rare)
-// 77 = 3Drag Controller
-// 8  = Teensylu
-// 80 = Rumba
-// 81 = Printrboard (AT90USB1286)
-// 82 = Brainwave (AT90USB646)
-// 83 = SAV Mk-I (AT90USB1286)
-// 9  = Gen3+
-// 70 = Megatronics
-// 701= Megatronics v2.0
-// 702= Minitronics v1.0
-// 90 = Alpha OMCA board
-// 91 = Final OMCA board
-// 301 = Rambo
-// 21 = Elefu Ra Board (v3)
+// 81 = Printrboard rev A-E (AT90USB1286)
+// 84 = Printrboard rev F (AT90USB1286)
 
 #ifndef MOTHERBOARD
-#define MOTHERBOARD 81
+#define MOTHERBOARD 84
 #endif
 
 // Define this to set a custom name for your generic Mendel,
@@ -81,7 +47,7 @@
 // #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
 
 // This defines the number of extruders
-#define EXTRUDERS 3
+#define EXTRUDERS 1
 
 //// The following define selects which power supply you have. Please choose the one that matches your setup
 // 1 = ATX
@@ -120,12 +86,11 @@
 // 51 is 100k thermistor - EPCOS (1k pullup)
 // 52 is 200k thermistor - ATC Semitec 204GT-2 (1k pullup)
 // 55 is 100k thermistor - ATC Semitec 104GT-2 (Used in ParCan & J-Head) (1k pullup)
-// 70 is thermistor for 500C pico hot end
 
 #define TEMP_SENSOR_0 1
 #define TEMP_SENSOR_1 1
 #define TEMP_SENSOR_2 1
-#define TEMP_SENSOR_BED 1
+#define TEMP_SENSOR_BED 7
 
 // This makes temp sensor 1 a redundant sensor for sensor 0. If the temperatures difference between these sensors is to high the print will be aborted.
 //#define TEMP_SENSOR_1_AS_REDUNDANT
@@ -139,7 +104,13 @@
 // The minimal temperature defines the temperature below which the heater will not be enabled It is used
 // to check that the wiring to the thermistor is not broken.
 // Otherwise this would lead to the heater being powered on all the time.
-#define HEATER_0_MINTEMP 5
+
+#if defined(PB_BOCUSINI)
+  #define HEATER_0_MINTEMP -10
+#else
+  #define HEATER_0_MINTEMP 5
+#endif
+
 #define HEATER_1_MINTEMP 5
 #define HEATER_2_MINTEMP 5
 #define BED_MINTEMP 5
@@ -147,9 +118,17 @@
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
-#define HEATER_0_MAXTEMP 275
-#define HEATER_1_MAXTEMP 275
-#define HEATER_2_MAXTEMP 275
+
+#if defined(PB_MCF)
+  #define HEATER_0_MAXTEMP 100
+#elif defined(PB_BOCUSINI)
+  #define HEATER_0_MAXTEMP 98
+#else
+  #define HEATER_0_MAXTEMP 300
+#endif
+
+#define HEATER_1_MAXTEMP 285
+#define HEATER_2_MAXTEMP 285
 #define BED_MAXTEMP 150
 
 // If your bed has low resistance e.g. .6 ohm and throws the fuse you can duty cycle it to reduce the
@@ -228,9 +207,11 @@
 
 //this prevents dangerous Extruder moves, i.e. if the temperature is under the limit
 //can be software-disabled for whatever purposes by
+#if !defined(PB_MCF) && !defined(PB_BOCUSINI)
 #define PREVENT_DANGEROUS_EXTRUDE
 //if PREVENT_DANGEROUS_EXTRUDE is on, you can still disable (uncomment) very long bits of extrusion separately.
 #define PREVENT_LENGTHY_EXTRUDE
+#endif
 
 #define EXTRUDE_MINTEMP 170
 #define EXTRUDE_MAXLENGTH (X_MAX_LENGTH+Y_MAX_LENGTH) //prevent extrusion of very large distances.
@@ -259,18 +240,23 @@
   #define ENDSTOPPULLUP_XMAX
   #define ENDSTOPPULLUP_YMAX
   #define ENDSTOPPULLUP_ZMAX
+  #define ENDSTOPPULLUP_EMAX
   #define ENDSTOPPULLUP_XMIN
   #define ENDSTOPPULLUP_YMIN
   #define ENDSTOPPULLUP_ZMIN
+  #define ENDSTOPPULLUP_EMIN
 #endif
 
 // The pullups are needed if you directly connect a mechanical endswitch between the signal and ground pins.
 const bool X_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Y_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
-const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+const bool Z_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool X_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Y_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+const bool E_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+const bool E_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+
 //#define DISABLE_MAX_ENDSTOPS
 //#define DISABLE_MIN_ENDSTOPS
 
@@ -288,7 +274,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 // Disables axis when it's not being used.
 #define DISABLE_X false
 #define DISABLE_Y false
-#define DISABLE_Z true
+#define DISABLE_Z false
 #define DISABLE_E false // For all extruders
 
 #define INVERT_X_DIR true    // for Mendel set to false, for Orca set to true
@@ -301,39 +287,77 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 // ENDSTOP SETTINGS:
 // Sets direction of endstops when homing; 1=MAX, -1=MIN
 #define X_HOME_DIR -1
-#define Y_HOME_DIR -1
-#define Z_HOME_DIR -1
+#define Y_HOME_DIR 1
+#if defined(PB_MCF)
+  #define Z_HOME_DIR 1
+#elif defined(PB_BOCUSINI)
+    #define Z_HOME_DIR 1
+#else
+  #define Z_HOME_DIR -1
+#endif
 
-#define min_software_endstops true // If true, axis won't move to coordinates less than HOME_POS.
-#define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
+#define min_software_endstops false // If true, axis won't move to coordinates less than HOME_POS.
+#define max_software_endstops false  // If true, axis won't move to coordinates greater than the defined lengths below.
 
-// Travel limits after homing
-#define X_MAX_POS_DEFAULT 205
 #define X_MIN_POS_DEFAULT 0
-#define Y_MAX_POS_DEFAULT 205
 #define Y_MIN_POS_DEFAULT 0
-#define Z_MAX_POS_DEFAULT 200
 #define Z_MIN_POS_DEFAULT 0
+
+#if defined(PB_PLAY)
+  #define X_MAX_POS_DEFAULT 100
+  #define Y_MAX_POS_DEFAULT 100
+  #define Z_MAX_POS_DEFAULT 131
+#elif defined(PB_SIMPLE)
+  #define X_MAX_POS_DEFAULT 152
+  #define Y_MAX_POS_DEFAULT 152
+  #define Z_MAX_POS_DEFAULT 152
+#elif defined(PB_PLUS)
+  #define X_MAX_POS_DEFAULT 250
+  #define Y_MAX_POS_DEFAULT 250
+  #define Z_MAX_POS_DEFAULT 254
+#elif defined(PB_MCF)
+  #define X_MAX_POS_DEFAULT 230
+  #define Y_MAX_POS_DEFAULT 160
+  #define Z_MAX_POS_DEFAULT 81
+  #define E_MAX_POS_DEFAULT 400
+  #define E_MIN_POS_DEFAULT 0
+#elif defined(PB_BOCUSINI)
+  #define X_MAX_POS_DEFAULT 152
+  #define Y_MAX_POS_DEFAULT 152
+  #define Z_MAX_POS_DEFAULT 131
+  #define E_MAX_POS_DEFAULT 400
+  #define E_MIN_POS_DEFAULT 0
+#else
+
+  #define X_MAX_POS_DEFAULT 152
+  #define Y_MAX_POS_DEFAULT 152
+  #define Z_MAX_POS_DEFAULT 152
+#endif
+
 
 #define X_MAX_LENGTH (base_max_pos[0] - base_min_pos[0])
 #define Y_MAX_LENGTH (base_max_pos[1] - base_min_pos[1])
 #define Z_MAX_LENGTH (base_max_pos[2] - base_min_pos[2])
 //============================= Bed Auto Leveling ===========================
 
-#define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (remove // at the start of the line)
+#if !defined(PB_MCF) && !defined(PB_BOCUSINI)
+  #define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (remove // at the start of the line)
+#endif
 
 #ifdef ENABLE_AUTO_BED_LEVELING
 
-  // these are the positions on the bed to do the probing
-  #define LEFT_PROBE_BED_POSITION 10
-  #define RIGHT_PROBE_BED_POSITION X_MAX_LENGTH-10
-  #define BACK_PROBE_BED_POSITION Y_MAX_LENGTH-10
-  #define FRONT_PROBE_BED_POSITION 10
+  // these are the positions on the bed to do the probing.
+  // NOTE: if the absolute value of the probe offset (x,y directions) is > 10, we have to move probe points inboard on that axis.
 
-  // these are the offsets to the prob relative to the extruder tip (Hotend - Probe)
-  #define X_PROBE_OFFSET_FROM_EXTRUDER_DEFAULT 5
+  #define LEFT_PROBE_BED_POSITION (bed_level_probe_offset[0] <= 10 ? 10 : bed_level_probe_offset[0])
+  #define RIGHT_PROBE_BED_POSITION (bed_level_probe_offset[0] >= -10 ? X_MAX_LENGTH - 10 : X_MAX_LENGTH + bed_level_probe_offset[0])
+  #define BACK_PROBE_BED_POSITION (bed_level_probe_offset[1] >= -10 ? Y_MAX_LENGTH - 10 : Y_MAX_LENGTH + bed_level_probe_offset[1])
+  #define FRONT_PROBE_BED_POSITION (bed_level_probe_offset[1] <= 10 ? 10 : bed_level_probe_offset[1])
+
+  // these are the offsets to the prob relative to the extruder tip (Hotend - Probe).  Default below prevents Metal Plus from probing off-bed.
+  #define X_PROBE_OFFSET_FROM_EXTRUDER_DEFAULT 20
   #define Y_PROBE_OFFSET_FROM_EXTRUDER_DEFAULT 0
-  #define Z_PROBE_OFFSET_FROM_EXTRUDER_DEFAULT -4
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER_DEFAULT 0
 
   #define Z_RAISE_BEFORE_HOMING 4       // (in mm) Raise Z before homing (G28) for Probe Clearance.
                                         // Be sure you have this distance over your Z_MAX_POS in case
@@ -371,12 +395,12 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
   // with accurate bed leveling, the bed is sampled in a ACCURATE_BED_LEVELING_POINTSxACCURATE_BED_LEVELING_POINTS grid and least squares solution is calculated
   // Note: this feature occupies 10'206 byte
   //#define ACCURATE_BED_LEVELING
-  
+
   #ifdef ACCURATE_BED_LEVELING
      // I wouldn't see a reason to go above 3 (=9 probing points on the bed)
     #define ACCURATE_BED_LEVELING_POINTS 2
   #endif
-  
+
 #endif
 
 // The position of the homing switches
@@ -395,10 +419,19 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define HOMING_FEEDRATE {50*60, 50*60, 4*60, 0}  // set the homing speeds (mm/min)
 
 // default settings
-
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {63.36,63.36,2272.72,590}
-#define DEFAULT_MAX_FEEDRATE          {100, 100, 2, 14}    // (mm/sec)    
-#define DEFAULT_MAX_ACCELERATION      {2000,2000,30,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for skeinforge 40+, for older versions raise them a lot.
+#if defined(PB_MCF)
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,406,406}
+  #define DEFAULT_MAX_FEEDRATE          {125, 125, 12, 14}    // (mm/sec)
+  #define DEFAULT_MAX_ACCELERATION      {200,200,30,3000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for skeinforge 40+, for older versions raise them a lot.
+#elif defined(PB_BOCUSINI)
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,2020,6666}
+  #define DEFAULT_MAX_FEEDRATE          {125, 125, 5, 14}
+  #define DEFAULT_MAX_ACCELERATION      {200,200,30,3000}
+#else
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,2020,96}
+  #define DEFAULT_MAX_FEEDRATE          {125, 125, 5, 14}
+  #define DEFAULT_MAX_ACCELERATION      {2000,2000,30,10000}
+#endif
 
 #define DEFAULT_ACCELERATION          3000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
 #define DEFAULT_RETRACT_ACCELERATION  3000   // X, Y, Z and E max acceleration in mm/s^2 for retracts
@@ -440,17 +473,20 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define ABS_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 
 //LCD and SD support
-#define ULTRA_LCD  //general lcd support, also 16x2
+//#define ULTRA_LCD  //general lcd support, also 16x2
 //#define DOGLCD  // Support for SPI LCD 128x64 (Controller ST7565R graphic Display Family)
 #define SDSUPPORT // Enable SD Card Support in Hardware Console
 //#define SDSLOW // Use slower SD transfer mode (not normally needed - uncomment if you're getting volume init error)
 //#define ENCODER_PULSES_PER_STEP 1 // Increase if you have a high resolution encoder
 //#define ENCODER_STEPS_PER_MENU_ITEM 5 // Set according to ENCODER_PULSES_PER_STEP or your liking
-#define NEWPANEL
+//#define NEWPANEL
+
+//Uncomment the lines below to save program flash space
 #define DISABLE_LCD_MOTION_MENU
+#define DISABLE_PREHEAT_MENU
 
 //#define ULTIMAKERCONTROLLER //as available from the ultimaker online store.
-#define ULTIPANEL  //the ultipanel as on thingiverse
+//#define ULTIPANEL  //the ultipanel as on thingiverse
 
 // The MaKr3d Makr-Panel with graphic controller and SD support
 // http://reprap.org/wiki/MaKr3d_MaKrPanel
