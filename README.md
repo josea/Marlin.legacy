@@ -229,7 +229,12 @@ M Codes
 *  M999 - Restart after being stopped by error
 
 
-Configuring and compilation:
+Configuring and compilation 
+============================
+
+See [a relative link](README_ARDUINO_COMPILE.md)
+
+Configuring and compilation (old):
 ============================
 
 Install the arduino software IDE/toolset v23 (Some configurations also work with 1.x.x)

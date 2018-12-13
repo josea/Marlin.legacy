@@ -273,6 +273,7 @@
 // Motor Current setting (Only functional when motor driver current ref pins are connected to a digital trimpot on supported boards)
 #define DIGIPOT_MOTOR_CURRENT {135,135,135,135,135} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
 
+#if MOTHERBOARD != 81
 #if defined(PB_PLAY)
   #define DAC_STEPPER_CURRENT {70,70,70,65,65}
 #elif defined(PB_SIMPLE)
@@ -286,6 +287,8 @@
 #else
   #define DAC_STEPPER_CURRENT {50,50,60,60,60}
 #endif
+
+#endif // MOTHERBOARD != 81
 
 //===========================================================================
 //=============================Additional Features===========================

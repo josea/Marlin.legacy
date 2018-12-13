@@ -202,7 +202,133 @@
   #define MOSI_PIN         10
 #endif
 
+#endif  // MOTHERBOARD == 84 (Printrboard rev F)
+
+
+/****************************************************************************************
+* Teensylu 0.7 / Printrboard pin assignments (AT90USB1286)
+* Requires the Teensyduino software with Teensy++ 2.0 selected in Arduino IDE!
+  http://www.pjrc.com/teensy/teensyduino.html
+* See http://reprap.org/wiki/Printrboard for more info
+****************************************************************************************/
+#if MOTHERBOARD == 8 || MOTHERBOARD == 81
+#define KNOWN_BOARD 1
+#define AT90USB 1286  // Disable MarlinSerial etc.
+
+#ifndef __AVR_AT90USB1286__
+#error Oops!  Make sure you have 'Teensy++ 2.0' selected from the 'Tools -> Boards' menu.
+#endif
+
+#define LARGE_FLASH        true
+
+//Disable JTAG pins so they can be used for the Extrudrboard
+#define DISABLE_JTAG       true
+
+#define X_STEP_PIN          0
+#define X_DIR_PIN           1
+#define X_ENABLE_PIN       39
+
+#define Y_STEP_PIN          2
+#define Y_DIR_PIN           3
+#define Y_ENABLE_PIN       38
+
+#define Z_STEP_PIN          4
+#define Z_DIR_PIN           5
+#define Z_ENABLE_PIN       23
+
+#define E0_STEP_PIN         6
+#define E0_DIR_PIN          7
+#define E0_ENABLE_PIN      19
+
+#define E1_STEP_PIN        24
+#define E1_DIR_PIN         25
+#define E1_ENABLE_PIN      44
+
+#define E2_STEP_PIN        26
+#define E2_DIR_PIN         27
+#define E2_ENABLE_PIN      45
+
+#define HEATER_0_PIN       21  // Extruder
+#define HEATER_1_PIN       46
+#define HEATER_2_PIN       47
+#define HEATER_BED_PIN     20  // Bed
+
+// If soft or fast PWM is off then use Teensyduino pin numbering, Marlin
+// fastio pin numbering otherwise
+#if defined(FAN_SOFT_PWM) || defined(FAST_PWM_FAN)
+  #define FAN_PIN        22  // Fan
+#else
+  #define FAN_PIN        16  // Fan
+#endif
+
+#if MOTHERBOARD == 8  // Teensylu
+  #define X_STOP_PIN         13
+  #define Y_STOP_PIN         14
+  #define Z_STOP_PIN         15
+  #define TEMP_0_PIN          7  // Extruder / Analog pin numbering
+  #define TEMP_BED_PIN        6  // Bed / Analog pin numbering
+#else  // Printrboard
+  #define X_STOP_PIN         35
+  #define Y_STOP_PIN          8
+  #define Z_STOP_PIN         36
+  #define TEMP_0_PIN          1  // Extruder / Analog pin numbering
+  #define TEMP_BED_PIN        0  // Bed / Analog pin numbering
+#endif
+
+#if EXTRUDERS > 1 
+  #define TEMP_1_PIN         2
+#else 
+  #define TEMP_1_PIN        -1
+#endif 
+#if EXTRUDERS > 2  
+  #define TEMP_2_PIN         3
+#else  
+ #define TEMP_2_PIN        -1
+#endif 
+
+#define SDPOWER            -1
+#define SDSS                26
+#define LED_PIN            -1
+#define PS_ON_PIN          -1
+#define KILL_PIN           -1
+#define ALARM_PIN          -1
+
+#ifdef ULTRA_LCD
+  #define BEEPER -1
+
+  #define LCD_PINS_RS 9
+  #define LCD_PINS_ENABLE 8
+  #define LCD_PINS_D4 7
+  #define LCD_PINS_D5 6
+  #define LCD_PINS_D6 5
+  #define LCD_PINS_D7 4
+
+  #define BTN_EN1   16
+  #define BTN_EN2   17
+  #define BTN_ENC   18//the click
+
+  #define BLEN_C 2
+  #define BLEN_B 1
+  #define BLEN_A 0
+
+  #define SDCARDDETECT -1
+
+  //encoder rotation values
+  #define encrot0 0
+  #define encrot1 2
+  #define encrot2 3
+  #define encrot3 1
+#endif
+
+#ifndef SDSUPPORT
+// these pins are defined in the SD library if building with SD support
+  #define SCK_PIN           9
+  #define MISO_PIN         11
+  #define MOSI_PIN         10
+#endif
+
 #endif  // MOTHERBOARD == 8 (Teensylu) or 81 (Printrboard)
+
 
 #ifndef KNOWN_BOARD
 #error Unknown MOTHERBOARD value in configuration.h
@@ -219,6 +345,37 @@
   #define _E2_PINS E2_STEP_PIN, E2_DIR_PIN, E2_ENABLE_PIN, HEATER_2_PIN,
 #else
   #define _E2_PINS
+#endif
+
+
+#ifdef X_STOP_PIN
+  #if X_HOME_DIR < 0
+    #define X_MIN_PIN X_STOP_PIN
+    #define X_MAX_PIN -1
+  #else
+    #define X_MIN_PIN -1
+    #define X_MAX_PIN X_STOP_PIN
+  #endif
+#endif
+
+#ifdef Y_STOP_PIN
+  #if Y_HOME_DIR < 0
+    #define Y_MIN_PIN Y_STOP_PIN
+    #define Y_MAX_PIN -1
+  #else
+    #define Y_MIN_PIN -1
+    #define Y_MAX_PIN Y_STOP_PIN
+  #endif
+#endif
+
+#ifdef Z_STOP_PIN
+  #if Z_HOME_DIR < 0
+    #define Z_MIN_PIN Z_STOP_PIN
+    #define Z_MAX_PIN -1
+  #else
+    #define Z_MIN_PIN -1
+    #define Z_MAX_PIN Z_STOP_PIN
+  #endif
 #endif
 
 #define SENSITIVE_PINS {0, 1, X_STEP_PIN, X_DIR_PIN, X_ENABLE_PIN, X_MIN_PIN, X_MAX_PIN, Y_STEP_PIN, Y_DIR_PIN, Y_ENABLE_PIN, Y_MIN_PIN, Y_MAX_PIN, Z_STEP_PIN, Z_DIR_PIN, Z_ENABLE_PIN, Z_MIN_PIN, Z_MAX_PIN, \

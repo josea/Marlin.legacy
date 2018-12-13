@@ -5,6 +5,9 @@
 // Advanced settings can be found in Configuration_adv.h
 // BASIC SETTINGS: select your board type, temperature sensor type, axis scaling, and endstop configuration
 
+// define your printer model to compile
+#define PB_SIMPLE_2014   
+
 //===========================================================================
 //============================= DELTA Printer ===============================
 //===========================================================================
@@ -16,7 +19,7 @@
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__ // build date and time
-#define STRING_CONFIG_H_AUTHOR "(JoseA, Printrbot firmware UnifiedV3 2018)" // Who made the changes.
+#define STRING_CONFIG_H_AUTHOR "(JoseA, Printrbot 2018)" // Who made the changes.
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
 // This allows the connection of wireless adapters (for instance) to non-default port pins.
@@ -35,8 +38,12 @@
 // 81 = Printrboard rev A-E (AT90USB1286)
 // 84 = Printrboard rev F (AT90USB1286)
 
+#ifdef PB_SIMPLE_2014
+  #define MOTHERBOARD 81
+#endif
+
 #ifndef MOTHERBOARD
-#define MOTHERBOARD 84
+#define MOTHERBOARD 81
 #endif
 
 // Define this to set a custom name for your generic Mendel,
@@ -250,10 +257,15 @@
 // The pullups are needed if you directly connect a mechanical endswitch between the signal and ground pins.
 const bool X_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Y_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
-const bool Z_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool X_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Y_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
-const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+#ifdef PB_SIMPLE_2014
+  const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+  const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+#else
+  const bool Z_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
+  const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
+#endif   
 const bool E_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool E_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 
@@ -287,13 +299,20 @@ const bool E_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 // ENDSTOP SETTINGS:
 // Sets direction of endstops when homing; 1=MAX, -1=MIN
 #define X_HOME_DIR -1
-#define Y_HOME_DIR 1
-#if defined(PB_MCF)
+
+#if defined(PB_SIMPLE_2014)
+  #define Y_HOME_DIR -1
+  #define Z_HOME_DIR -1
+#elif defined(PB_MCF)
   #define Z_HOME_DIR 1
 #elif defined(PB_BOCUSINI)
     #define Z_HOME_DIR 1
 #else
   #define Z_HOME_DIR -1
+#endif
+
+#ifndef Y_HOME_DIR 
+define Y_HOME_DIR 1
 #endif
 
 #define min_software_endstops false // If true, axis won't move to coordinates less than HOME_POS.
@@ -327,6 +346,10 @@ const bool E_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
   #define Z_MAX_POS_DEFAULT 131
   #define E_MAX_POS_DEFAULT 400
   #define E_MIN_POS_DEFAULT 0
+#elif defined(PB_SIMPLE_2014)
+  #define X_MAX_POS_DEFAULT 100
+  #define Y_MAX_POS_DEFAULT 100
+  #define Z_MAX_POS_DEFAULT 115
 #else
 
   #define X_MAX_POS_DEFAULT 152
@@ -338,9 +361,10 @@ const bool E_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define X_MAX_LENGTH (base_max_pos[0] - base_min_pos[0])
 #define Y_MAX_LENGTH (base_max_pos[1] - base_min_pos[1])
 #define Z_MAX_LENGTH (base_max_pos[2] - base_min_pos[2])
+
 //============================= Bed Auto Leveling ===========================
 
-#if !defined(PB_MCF) && !defined(PB_BOCUSINI)
+#if !defined(PB_MCF) && !defined(PB_BOCUSINI) && !defined(PB_SIMPLE_2014)
   #define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (remove // at the start of the line)
 #endif
 
@@ -427,6 +451,10 @@ const bool E_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
   #define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,2020,6666}
   #define DEFAULT_MAX_FEEDRATE          {125, 125, 5, 14}
   #define DEFAULT_MAX_ACCELERATION      {200,200,30,3000}
+#elif defined(PB_SIMPLE_2014)
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,2020,96}
+  #define DEFAULT_MAX_FEEDRATE          {100, 100, 2, 14}
+  #define DEFAULT_MAX_ACCELERATION      {2000,2000,30,10000}
 #else
   #define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,2020,96}
   #define DEFAULT_MAX_FEEDRATE          {125, 125, 5, 14}
