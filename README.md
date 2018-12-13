@@ -232,7 +232,7 @@ M Codes
 Configuring and compilation 
 ============================
 
-See [a relative link](README_ARDUINO_COMPILE.md)
+See [Build in Arduino](README_ARDUINO_COMPILE.md)
 
 Configuring and compilation (old):
 ============================
