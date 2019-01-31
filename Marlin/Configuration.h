@@ -6,7 +6,8 @@
 // BASIC SETTINGS: select your board type, temperature sensor type, axis scaling, and endstop configuration
 
 // define your printer model to compile
-#define PB_SIMPLE_2014   
+#define PB_SIMPLE_2014  
+#define PB_SIMPLE_2014_X_GEAR  // mod. to use gears&Belts in the X axis. 
 
 //===========================================================================
 //============================= DELTA Printer ===============================
@@ -301,6 +302,9 @@ const bool E_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define X_HOME_DIR -1
 
 #if defined(PB_SIMPLE_2014)
+  #if defined(PB_SIMPLE_2014_X_GEAR) 
+    #define X_HOME_DIR 1
+  #endif 
   #define Y_HOME_DIR -1
   #define Z_HOME_DIR -1
 #elif defined(PB_MCF)
