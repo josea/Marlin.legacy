@@ -290,7 +290,11 @@ const bool E_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define DISABLE_Z false
 #define DISABLE_E false // For all extruders
 
-#define INVERT_X_DIR true    // for Mendel set to false, for Orca set to true
+#if defined(PB_SIMPLE_2014_X_GEAR) 
+  #define INVERT_X_DIR false    // for Mendel set to false, for Orca set to true
+#else
+  #define INVERT_X_DIR true // for Mendel set to false, for Orca set to true  
+#endif 
 #define INVERT_Y_DIR true    // for Mendel set to true, for Orca set to false
 #define INVERT_Z_DIR true     // for Mendel set to false, for Orca set to true
 #define INVERT_E0_DIR false   // for direct drive extruder v9 set to true, for geared extruder set to false
@@ -301,10 +305,7 @@ const bool E_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 // Sets direction of endstops when homing; 1=MAX, -1=MIN
 #define X_HOME_DIR -1
 
-#if defined(PB_SIMPLE_2014)
-  #if defined(PB_SIMPLE_2014_X_GEAR) 
-    #define X_HOME_DIR 1
-  #endif 
+#if defined(PB_SIMPLE_2014)  
   #define Y_HOME_DIR -1
   #define Z_HOME_DIR -1
 #elif defined(PB_MCF)
