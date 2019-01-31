@@ -292,8 +292,10 @@ const bool E_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 
 #if defined(PB_SIMPLE_2014_X_GEAR) 
   #define INVERT_X_DIR false    // for Mendel set to false, for Orca set to true
+  #define X_Y_SKEW_ANGLE 0.00872686779
 #else
   #define INVERT_X_DIR true // for Mendel set to false, for Orca set to true  
+  #define X_Y_SKEW_ANGLE -0.00872686779
 #endif 
 #define INVERT_Y_DIR true    // for Mendel set to true, for Orca set to false
 #define INVERT_Z_DIR true     // for Mendel set to false, for Orca set to true
