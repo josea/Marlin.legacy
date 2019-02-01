@@ -291,8 +291,10 @@ const bool E_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define DISABLE_E false // For all extruders
 
 #if defined(PB_SIMPLE_2014_X_GEAR) 
-  #define INVERT_X_DIR false    // for Mendel set to false, for Orca set to true
-  #define X_Y_SKEW_ANGLE 0.00872686779
+  //#define INVERT_X_DIR false // for Mendel set to false, for Orca set to true
+  //#define X_Y_SKEW_ANGLE 0.00872686779
+  #define INVERT_X_DIR true // for Mendel set to false, for Orca set to true  
+  #define X_Y_SKEW_ANGLE -0.00872686779  // the X_Y_SKEW_ANGLE doesn't work if X_HOME_DIR = 1 (End STOP in MAX). So watch out for this.
 #else
   #define INVERT_X_DIR true // for Mendel set to false, for Orca set to true  
   #define X_Y_SKEW_ANGLE -0.00872686779
@@ -305,7 +307,13 @@ const bool E_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 
 // ENDSTOP SETTINGS:
 // Sets direction of endstops when homing; 1=MAX, -1=MIN
-#define X_HOME_DIR -1
+#if defined(PB_SIMPLE_2014_X_GEAR) 
+  //#define X_HOME_DIR 1
+  #define X_HOME_DIR -1 // the X_Y_SKEW_ANGLE doesn't work if X_HOME_DIR = 1 (End STOP in MAX). So watch out for this.
+  // that's the reason I had to flip the wood base (instead of rotating it as I've done).
+#else
+  #define X_HOME_DIR -1
+#endif
 
 #if defined(PB_SIMPLE_2014)  
   #define Y_HOME_DIR -1
