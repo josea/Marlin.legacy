@@ -261,7 +261,8 @@ const bool Y_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 const bool X_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Y_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 #ifdef PB_SIMPLE_2014
-  const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+  //const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+  const bool Z_MIN_ENDSTOP_INVERTING = true; // JoseA: modified endstop so it can be connected in parallel with proximity probe.
   const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 #else
   const bool Z_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
