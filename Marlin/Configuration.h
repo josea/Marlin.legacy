@@ -380,6 +380,7 @@ define Y_HOME_DIR 1
 
 //============================= Bed Auto Leveling ===========================
 
+#define ENABLE_AUTO_BED_LEVELING // JoseA: added BED LEVELING.
 #if !defined(PB_MCF) && !defined(PB_BOCUSINI) && !defined(PB_SIMPLE_2014)
   #define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (remove // at the start of the line)
 #endif
@@ -395,7 +396,7 @@ define Y_HOME_DIR 1
   #define FRONT_PROBE_BED_POSITION (bed_level_probe_offset[1] <= 10 ? 10 : bed_level_probe_offset[1])
 
   // these are the offsets to the prob relative to the extruder tip (Hotend - Probe).  Default below prevents Metal Plus from probing off-bed.
-  #define X_PROBE_OFFSET_FROM_EXTRUDER_DEFAULT 20
+  #define X_PROBE_OFFSET_FROM_EXTRUDER_DEFAULT 0
   #define Y_PROBE_OFFSET_FROM_EXTRUDER_DEFAULT 0
   #define Z_PROBE_OFFSET_FROM_EXTRUDER_DEFAULT 0
 
@@ -434,7 +435,7 @@ define Y_HOME_DIR 1
 
   // with accurate bed leveling, the bed is sampled in a ACCURATE_BED_LEVELING_POINTSxACCURATE_BED_LEVELING_POINTS grid and least squares solution is calculated
   // Note: this feature occupies 10'206 byte
-  //#define ACCURATE_BED_LEVELING
+  #define ACCURATE_BED_LEVELING
 
   #ifdef ACCURATE_BED_LEVELING
      // I wouldn't see a reason to go above 3 (=9 probing points on the bed)
