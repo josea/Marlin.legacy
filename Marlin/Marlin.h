@@ -53,7 +53,17 @@
    #ifdef BTENABLED
          #define MYSERIAL bt
    #else
-         #define MYSERIAL Serial
+	   // this idea, that didn't work, was taken from: 
+   // https://www.reddit.com/r/PrintrBot/comments/3a230e/printrboard_rpi_link/
+   // https://github.com/j-laird/Printrboard-Pi-Link
+   // https://github.com/j-laird/Marlin/commit/79add543975e17e31e77d679964103a784fbb875
+   // https://github.com/j-laird/Marlin/commit/adb21dd3dae0414b3687ece857350e83af982be8
+   // other files where modified (the ones in the commits above).
+     //   #if defined(AT90USB)
+      //extern HardwareSerial HWSerial;
+  //#endif 
+        //#define MYSERIAL HWSerial
+        #define MYSERIAL Serial
    #endif // BTENABLED
 #else
   #define MYSERIAL MSerial

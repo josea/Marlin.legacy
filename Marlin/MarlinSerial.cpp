@@ -326,3 +326,7 @@ MarlinSerial MSerial;
    HardwareSerial bt;
 #endif
 
+//#if defined(AT90USB)
+//  HardwareSerial HWSerial;
+//#endif 
+

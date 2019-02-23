@@ -30,8 +30,18 @@
 /* All the implementation is done in *.cpp files to get better compatibility with avr-gcc without the Arduino IDE */
 /* Use this file to help the Arduino IDE find which Arduino libraries are needed and to keep documentation on GCode */
 
+/*void Serial2_begin(int boud){
+  Serial1.begin(boud);
+}
+void Serial2_println(char* s) {
+  Serial1.println(s);
+}
+*/
+
 #include "Configuration.h"
 #include "pins.h"
+
+
 
 #ifdef ULTRA_LCD
   #if defined(LCD_I2C_TYPE_PCF8575)

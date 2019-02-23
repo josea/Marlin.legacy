@@ -186,4 +186,10 @@ extern MarlinSerial MSerial;
    extern HardwareSerial bt;
 #endif
 
+
+//#if defined(AT90USB)
+  //extern HardwareSerial HWSerial;
+//#endif 
+
 #endif
+

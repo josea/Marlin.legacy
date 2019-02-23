@@ -25,14 +25,17 @@
 // SERIAL_PORT selects which serial port should be used for communication with the host.
 // This allows the connection of wireless adapters (for instance) to non-default port pins.
 // Serial port 0 is still used by the Arduino bootloader regardless of this setting.
-#define SERIAL_PORT 0
+//#define SERIAL_PORT 0
+#define SERIAL_PORT 1
 
 // This determines the communication speed of the printer
 // This determines the communication speed of the printer
-#define BAUDRATE 250000
+//#define BAUDRATE 250000
+//#define BAUDRATE 115200
+#define BAUDRATE 9600
 
 // This enables the serial port associated to the Bluetooth interface
-//#define BTENABLED              // Enable BT interface on AT90USB devices
+#define BTENABLED              // Enable BT interface on AT90USB devices
 
 
 //// The following define selects which electronics board you have. Please choose the one that matches your setup

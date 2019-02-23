@@ -435,6 +435,9 @@ void servo_init()
 
 void setup()
 {
+//  Serial1.begin(115200);
+//  Serial1.println("Test");
+
 #ifdef DISABLE_JTAG
   // From the AT90USB1286 data sheet:
   // When bit 7 of the MCU Control Register is set to 1 the JTAG interface is disabled. 
@@ -506,6 +509,7 @@ void setup()
 
 void loop()
 {
+  //Serial1.println("Printrboard - loop");
   if(buflen < (BUFSIZE-1))
     get_command();
   #ifdef SDSUPPORT
